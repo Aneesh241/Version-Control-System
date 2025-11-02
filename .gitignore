@@ -48,3 +48,7 @@ commits.*
 
 # Keep documentation images
 !Documentation/images/*.png
+
+#prompt
+prompt.txt
+
