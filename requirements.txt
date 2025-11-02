@@ -1,0 +1,3 @@
+# Optional dependencies for visualization
+networkx>=2.8
+matplotlib>=3.5
