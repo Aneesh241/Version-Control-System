@@ -52,3 +52,7 @@ commits.*
 #prompt
 prompt.txt
 
+# Backup and temporary files
+backup_originals/
+report/
+~$*.docx
