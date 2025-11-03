@@ -51,8 +51,25 @@ class Repository:
             return f"Error: '{filepath}' is a directory. Add files individually."
         
         try:
-            with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read()
+            # Read file in binary mode first to detect encoding
+            with open(full_path, 'rb') as f:
+                raw_content = f.read()
+            
+            # Try to decode with proper encoding detection
+            try:
+                # Check for UTF-16 BOM
+                if raw_content.startswith(b'\xff\xfe') or raw_content.startswith(b'\xfe\xff'):
+                    content = raw_content.decode('utf-16')
+                # Check for UTF-8 BOM
+                elif raw_content.startswith(b'\xef\xbb\xbf'):
+                    content = raw_content.decode('utf-8-sig')
+                else:
+                    # Default to UTF-8
+                    content = raw_content.decode('utf-8')
+            except UnicodeDecodeError:
+                # Fallback to latin-1 which never fails
+                content = raw_content.decode('latin-1')
+            
             self.staging_area[filepath] = content
             self._save_repo_state()
             self._log_action('add', f'Staged {filepath}')
@@ -158,7 +175,7 @@ class Repository:
             for filename, content in commit.files.items():
                 filepath = self.repo_path / filename
                 filepath.parent.mkdir(parents=True, exist_ok=True)
-                with open(filepath, 'w') as f:
+                with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(content)
         
         self._save_repo_state()
@@ -191,7 +208,7 @@ class Repository:
             for filename, content in commit.files.items():
                 filepath = self.repo_path / filename
                 filepath.parent.mkdir(parents=True, exist_ok=True)
-                with open(filepath, 'w') as f:
+                with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(content)
         
         self._save_repo_state()
